@@ -1,0 +1,14 @@
+a b c e 
+1 2 3 4 5 
+1 5 
+3 5 
+1 a 2
+1 b 4
+2 a 2
+2 b 2
+2 c 3
+2 e 3
+4 c 3
+4 e 3
+3 epsilon 5
+5 epsilon 1

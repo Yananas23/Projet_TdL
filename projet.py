@@ -52,6 +52,7 @@ class Automate:
         dot = gv.Digraph()
         dot.attr(rankdir='LR')
         for etat in self.etats:
+            dot.node(str(etat), shape='circle')
             if etat in self.etat_initial:
                 initial = "__" + str(etat) + "__"
                 dot.node(initial, shape='point')
@@ -59,7 +60,6 @@ class Automate:
                 dot.edge(initial, str(etat))
             if etat in self.etats_finaux:
                 dot.node(str(etat), shape='doublecircle')
-            dot.node(str(etat), shape='circle')
         for transition in self.transitions:
             dot.edge(str(transition[0]), str(transition[2]), label=transition[1], shape='circle')
         return dot
@@ -107,23 +107,75 @@ class Automate:
         for transition in lines[4:]:
             transition = transition.split()
             self.ajouter_transition(transition[0], transition[1], transition[2])
-    
-        
-automate = Automate()
-automate.charger("automate.txt")
-# automate.Automate(['a', 'b', 'c', 'd'])
-# automate.ajouter_etat('1', est_initial=True)
-# automate.ajouter_etat('2')
-# automate.ajouter_etat('3', est_terminal=True)
-# automate.ajouter_etat('4')
-# automate.ajouter_transition('1', 'a', '2')
-# automate.ajouter_transition('1', 'b', '4')
-# automate.ajouter_transition('2', 'a', '2')
-# automate.ajouter_transition('2', 'b', '2')
-# automate.ajouter_transition('2', 'c', '3')
-# automate.ajouter_transition('2', 'd', '3')
-# automate.ajouter_transition('4', 'c', '3')
-# automate.ajouter_transition('4', 'd', '3')
-automate.to_png()
+            
+         
+# debut des fonctions            
+            
+def copie(aut):
+    aut2 = Automate()
+    aut2.alphabet = [lettre for lettre in aut.alphabet]
+    aut2.etats = [etat for etat in aut.etats]
+    aut2.etat_initial = [etat for etat in aut.etat_initial]
+    aut2.etats_finaux = [etat for etat in aut.etats_finaux]
+    aut2.transitions = [transition for transition in aut.transitions]
+    return aut2
 
-# automate.sauvegarder("automate.txt")
+
+def concatenation(aut1, aut2):
+    aut3 = Automate()
+    last_etat = str(int(aut1.etats[-1]) + 1)
+    aut3 = copie(aut1)
+    
+    for lettre in aut2.alphabet:
+        if lettre not in aut3.alphabet:
+            aut3.alphabet.append(lettre)
+            
+    aut3.ajouter_etat(last_etat)
+    for etat in aut2.etats:
+        aut3.etats.append(str(int(etat) + int(last_etat)))
+        
+    for transition in aut2.transitions:
+        aut3.ajouter_transition(str(int(transition[0]) + int(last_etat)), transition[1], str(int(transition[2]) + int(last_etat)))
+    
+    aut3.etats_finaux = [str(int(etat) + int(last_etat)) for etat in aut2.etats_finaux]
+    
+    
+    for etat in aut1.etats_finaux:
+        aut3.ajouter_transition(etat, "epsilon", last_etat)
+    for etat in aut2.etat_initial:
+        aut3.ajouter_transition(last_etat, "epsilon", str(int(etat) + int(last_etat)))
+    
+    return aut3
+
+
+def duplication(aut):
+    aut2 = Automate()
+    aut2 = copie(aut)
+    last_etat = str(int(aut.etats[-1]) + 1)
+    
+    
+    aut2.ajouter_etat(last_etat, est_initial=True, est_terminal=True)
+    
+    for etat in aut.etats_finaux:
+        aut2.ajouter_transition(etat, "epsilon", last_etat)
+    for etat in aut.etat_initial:
+        aut2.ajouter_transition(last_etat, "epsilon", etat)
+
+    
+    return aut2
+
+
+aut1 = Automate()
+aut1.charger("automate1.txt")
+aut2 = Automate()
+aut2.charger("automate2.txt")
+
+# aut3 = concatenation(aut1, aut2)
+# aut3.sauvegarder("automate3.txt")
+# aut3.to_png()
+
+aut5 = Automate()
+aut5.charger("automate5.txt")
+aut4 = duplication(aut5)
+aut4.sauvegarder("automate4.txt")
+aut4.to_png()
