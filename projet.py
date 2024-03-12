@@ -1,8 +1,10 @@
 import graphviz as gv
 
 class Automate:
+    '''Classe représentant un automate'''
     
     def __init__(self):
+        '''Initialise un automate vide'''
         self.alphabet = []
         self.etats = []
         self.etats_initial = []
@@ -11,10 +13,12 @@ class Automate:
         
         
     def Automate(self, alphabet):
+        '''Défini l'alphabet de l'automate'''
         self.alphabet = alphabet
         
         
     def ajouter_etat(self, id, est_initial=False, est_terminal=False) :
+        '''Ajoute un état à l'automate, est défini si il est initial ou terminal'''
         self.etats.append(id)
         if est_initial:
             self.etats_initial.append(id)
@@ -23,6 +27,7 @@ class Automate:
          
             
     def ajouter_transition(self, source, symbole, destination):
+        '''Ajoute une transition à l'automate, si la transition existe déjà, les symboles sont concaténés'''
         for transition in self.transitions:
             if transition[0] == source and transition[2] == destination:
                 self.transitions.append((source, transition[1] + ', ' + symbole, destination))
@@ -32,6 +37,7 @@ class Automate:
         
         
     def __str__(self):
+        '''Retourne une représentation de l'automate sous forme de chaine de caractères'''
         result = "Alphabet: " + str(sorted(self.alphabet)) + "\n"
         result += "Etats: " + str(sorted(self.etats)) + "\n"
         result += "Etats initiaux: " + str(sorted(self.etats_initial)) + "\n"
@@ -43,6 +49,7 @@ class Automate:
     
     
     def demonte(self):
+        '''Retourne une liste de transitions où chaque transition est décomposée en une transition par symbole de l'alphabet'''
         demonte = []
         for transition in self.transitions:
             if len(transition[1]) == 1:
@@ -54,6 +61,7 @@ class Automate:
             
     
     def to_dot(self):
+        '''Retourne une représentation graphique de l'automate sous forme de graphe avec la librairie graphviz'''
         dot = gv.Digraph()
         dot.attr(rankdir='LR')
         for etat in self.etats:
@@ -70,10 +78,12 @@ class Automate:
         return dot
     
     def to_png(self):
+        '''Retourne une représentation graphique de l'automate sous forme d'image au format png'''
         return self.to_dot().render(format='png')
     
     
     def sauvegarder(self, file_name):
+        '''Sauvegarde l'automate dans un fichier texte avec une structure prédéfinie'''
         txt = ""
         file = open(file_name, "w")
         
@@ -101,6 +111,7 @@ class Automate:
     
     
     def charger(self, file_name):
+        '''Charge un automate depuis un fichier texte avec une structure prédéfinie'''
         file = open(file_name, "r")
         lines = file.readlines()
         file.close()
@@ -118,6 +129,7 @@ class Automate:
 # debut des fonctions            
             
 def copie(aut):
+    '''Retourne une copie de l'automate passé en paramètre'''
     aut2 = Automate()
     aut2.alphabet = [lettre for lettre in aut.alphabet]
     aut2.etats = [etat for etat in aut.etats]
@@ -128,6 +140,7 @@ def copie(aut):
 
 
 def union(aut1, aut2):
+    '''Retourne un automate qui est l'union des deux automates passés en paramètre'''
     aut3 = Automate()
     aut3 = copie(aut1)
     aut3.etats_initial = []
@@ -160,6 +173,7 @@ def union(aut1, aut2):
 
 
 def concatenation(aut1, aut2):
+    '''Retourne un automate qui est la concaténation des deux automates passés en paramètre'''
     aut3 = Automate()
     last_etat = str(int(aut1.etats[-1]) + 1)
     aut3 = copie(aut1)
@@ -186,6 +200,7 @@ def concatenation(aut1, aut2):
 
 
 def duplication(aut):
+    '''Retourne un automate qui est la duplication de l'automate passé en paramètre'''
     aut2 = Automate()
     aut2 = copie(aut)
     last_etat = str(int(aut.etats[-1]) + 1)
