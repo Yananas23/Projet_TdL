@@ -5,19 +5,22 @@ class Automate:
     def __init__(self):
         self.alphabet = []
         self.etats = []
-        self.etat_initial = []
+        self.etats_initial = []
         self.etats_finaux = []
         self.transitions = []
+        
         
     def Automate(self, alphabet):
         self.alphabet = alphabet
         
+        
     def ajouter_etat(self, id, est_initial=False, est_terminal=False) :
         self.etats.append(id)
         if est_initial:
-            self.etat_initial.append(id)
+            self.etats_initial.append(id)
         if est_terminal:
             self.etats_finaux.append(id)
+         
             
     def ajouter_transition(self, source, symbole, destination):
         for transition in self.transitions:
@@ -27,15 +30,17 @@ class Automate:
                 return
         self.transitions.append((source, symbole, destination))
         
+        
     def __str__(self):
         result = "Alphabet: " + str(sorted(self.alphabet)) + "\n"
         result += "Etats: " + str(sorted(self.etats)) + "\n"
-        result += "Etats initiaux: " + str(sorted(self.etat_initial)) + "\n"
+        result += "Etats initiaux: " + str(sorted(self.etats_initial)) + "\n"
         result += "Etats terminaux: " + str(sorted(self.etats_finaux)) + "\n"
         result += "Transitions:\n"
         for transition in self.transitions:
             result += f"{transition[0]} --({transition[1]})--> {transition[2]}\n"
         return result
+    
     
     def demonte(self):
         demonte = []
@@ -53,7 +58,7 @@ class Automate:
         dot.attr(rankdir='LR')
         for etat in self.etats:
             dot.node(str(etat), shape='circle')
-            if etat in self.etat_initial:
+            if etat in self.etats_initial:
                 initial = "__" + str(etat) + "__"
                 dot.node(initial, shape='point')
                 dot.node(str(etat), shape='circle')
@@ -67,6 +72,7 @@ class Automate:
     def to_png(self):
         return self.to_dot().render(format='png')
     
+    
     def sauvegarder(self, file_name):
         txt = ""
         file = open(file_name, "w")
@@ -79,7 +85,7 @@ class Automate:
             txt += etat + " "
         txt += "\n"
         
-        for etat in self.etat_initial:
+        for etat in self.etats_initial:
             txt += etat + " "
         txt += "\n"
         
@@ -101,7 +107,7 @@ class Automate:
         
         self.alphabet = lines[0].split()
         self.etats = lines[1].split()
-        self.etat_initial = lines[2].split()
+        self.etats_initial = lines[2].split()
         self.etats_finaux = lines[3].split()
         
         for transition in lines[4:]:
@@ -115,10 +121,42 @@ def copie(aut):
     aut2 = Automate()
     aut2.alphabet = [lettre for lettre in aut.alphabet]
     aut2.etats = [etat for etat in aut.etats]
-    aut2.etat_initial = [etat for etat in aut.etat_initial]
+    aut2.etats_initial = [etat for etat in aut.etats_initial]
     aut2.etats_finaux = [etat for etat in aut.etats_finaux]
     aut2.transitions = [transition for transition in aut.transitions]
     return aut2
+
+
+def union(aut1, aut2):
+    aut3 = Automate()
+    aut3 = copie(aut1)
+    aut3.etats_initial = []
+    aut3.ajouter_etat('0', est_initial=True)
+    
+    for lettre in aut2.alphabet:
+        if lettre not in aut3.alphabet:
+            aut3.alphabet.append(lettre)
+    
+    for etat in aut3.etats:
+        if etat != '0':
+            etat = str(int(etat) + 1)
+    
+    last_etat = str(int(aut1.etats[-1]) + 1)
+            
+    for etat in aut2.etats:
+        aut3.ajouter_etat(str(int(etat) + int(last_etat)))
+        
+    for transition in aut2.transitions:
+        aut3.ajouter_transition(str(int(transition[0]) + int(last_etat)), transition[1], str(int(transition[2]) + int(last_etat)))
+        
+    aut3.etats_finaux = [str(int(etat) + int(last_etat)) for etat in aut2.etats_finaux]
+    
+    for etat in aut1.etats_initial:
+        aut3.ajouter_transition('0', "epsilon", etat)
+    for etat in aut2.etats_initial:
+        aut3.ajouter_transition('0', "epsilon", str(int(etat) + int(last_etat)))
+            
+    return aut3
 
 
 def concatenation(aut1, aut2):
@@ -139,7 +177,6 @@ def concatenation(aut1, aut2):
     
     aut3.etats_finaux = [str(int(etat) + int(last_etat)) for etat in aut2.etats_finaux]
     
-    
     for etat in aut1.etats_finaux:
         aut3.ajouter_transition(etat, "epsilon", last_etat)
     for etat in aut2.etat_initial:
@@ -153,15 +190,13 @@ def duplication(aut):
     aut2 = copie(aut)
     last_etat = str(int(aut.etats[-1]) + 1)
     
-    
     aut2.ajouter_etat(last_etat, est_initial=True, est_terminal=True)
     
     for etat in aut.etats_finaux:
         aut2.ajouter_transition(etat, "epsilon", last_etat)
     for etat in aut.etat_initial:
         aut2.ajouter_transition(last_etat, "epsilon", etat)
-
-    
+  
     return aut2
 
 
@@ -174,8 +209,13 @@ aut2.charger("automate2.txt")
 # aut3.sauvegarder("automate3.txt")
 # aut3.to_png()
 
-aut5 = Automate()
-aut5.charger("automate5.txt")
-aut4 = duplication(aut5)
-aut4.sauvegarder("automate4.txt")
-aut4.to_png()
+# aut5 = Automate()
+# aut5.charger("automate5.txt")
+# aut4 = duplication(aut5)
+# aut4.sauvegarder("automate4.txt")
+# aut4.to_png()
+
+aut6 = Automate()
+aut6 = union(aut1, aut2)
+aut6.sauvegarder("automate6.txt")
+aut6.to_png()
