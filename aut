@@ -1,0 +1,8 @@
+digraph {
+	rankdir=LR
+	"(0 - 1)" [shape=circle]
+	"__(0 - 1)__" [shape=point]
+	"(0 - 1)" [shape=circle]
+	"__(0 - 1)__" -> "(0 - 1)"
+	"(0 - 1)" -> 2 [label=a shape=circle]
+}

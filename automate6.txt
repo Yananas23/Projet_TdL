@@ -1,7 +1,7 @@
 a b c d e 
-1 2 3 4 0 6 7 8 9 
+1 2 3 4 0 6 7 8 9 puit 
 0 
-8 
+3 8 
 1 a 2
 1 b 4
 2 a 2
@@ -20,3 +20,37 @@ a b c d e
 9 e 8
 0 epsilon 1
 0 epsilon 6
+1 c puit
+1 d puit
+1 e puit
+2 e puit
+3 a puit
+3 b puit
+3 c puit
+3 d puit
+3 e puit
+4 a puit
+4 b puit
+4 e puit
+0 a puit
+0 b puit
+0 c puit
+0 d puit
+0 e puit
+6 c puit
+6 d puit
+6 e puit
+7 d puit
+8 a puit
+8 b puit
+8 c puit
+8 d puit
+8 e puit
+9 a puit
+9 b puit
+9 d puit
+puit a puit
+puit b puit
+puit c puit
+puit d puit
+puit e puit

@@ -77,9 +77,9 @@ class Automate:
             dot.edge(str(transition[0]), str(transition[2]), label=transition[1], shape='circle')
         return dot
     
-    def to_png(self):
+    def to_png(self, file_name):
         '''Retourne une représentation graphique de l'automate sous forme d'image au format png'''
-        return self.to_dot().render(format='png')
+        return self.to_dot().render(filename=file_name, format='png')
     
     
     def sauvegarder(self, file_name):
@@ -125,7 +125,60 @@ class Automate:
             transition = transition.split()
             self.ajouter_transition(transition[0], transition[1], transition[2])
             
-         
+            
+    def completer(self):
+        '''Complète l'automate pour qu'il soit complet'''
+        self.ajouter_etat('puit')
+        for etat in self.etats:
+            possede = [transition[1] for transition in self.demonte() if transition[0] == etat]
+            for symbole in self.alphabet:
+                if symbole not in possede:
+                    self.ajouter_transition(etat, symbole, 'puit')
+
+
+    def est_deterministe(self):
+        '''Retourne True si l'automate est déterministe, False sinon'''
+        if len(self.etats_initial) > 1:
+            return False
+        for etat in self.etats:
+            pass
+        
+
+    def determiniser(self):
+        '''Retourne un automate déterministe équivalent à l'automate'''
+        aut = Automate()
+        aut.alphabet = self.alphabet
+        if len(self.etats_initial) > 1:
+            initial = '(' + ' - '.join(self.etats_initial) + ')'
+            a_transitioner = [etat for etat in self.etats_initial]
+        else:
+            initial = self.etats_initial[0]
+            a_transitioner = [self.etats_initial[0]]
+        aut.ajouter_etat(initial, est_initial=True)
+        while a_transitioner:
+            print(a_transitioner)
+            for lettre in self.alphabet:
+                for transition in self.demonte():
+                    if transition[0] in a_transitioner:
+                        if transition[1] == lettre:
+                            if transition[2] not in a_transitioner:
+                                a_transitioner.append(transition[2])
+                                aut.ajouter_transition(initial, lettre, transition[2])
+            a_transitioner.pop(0)
+            
+        
+        
+        
+        
+        
+        
+        
+        
+        aut.to_png('aut')
+        
+            
+
+       
 # debut des fonctions            
             
 def copie(aut):
@@ -162,7 +215,8 @@ def union(aut1, aut2):
     for transition in aut2.transitions:
         aut3.ajouter_transition(str(int(transition[0]) + int(last_etat)), transition[1], str(int(transition[2]) + int(last_etat)))
         
-    aut3.etats_finaux = [str(int(etat) + int(last_etat)) for etat in aut2.etats_finaux]
+    for etat in aut2.etats_finaux:
+        aut3.etats_finaux.append(str(int(etat) + int(last_etat)))
     
     for etat in aut1.etats_initial:
         aut3.ajouter_transition('0', "epsilon", etat)
@@ -215,6 +269,9 @@ def duplication(aut):
     return aut2
 
 
+
+
+
 aut1 = Automate()
 aut1.charger("automate1.txt")
 aut2 = Automate()
@@ -222,15 +279,20 @@ aut2.charger("automate2.txt")
 
 # aut3 = concatenation(aut1, aut2)
 # aut3.sauvegarder("automate3.txt")
-# aut3.to_png()
+# aut3.to_png('aut3')
 
-# aut5 = Automate()
-# aut5.charger("automate5.txt")
+aut5 = Automate()
+aut5.charger("automate5.txt")
+aut5.determiniser()
+aut5.to_png('aut5')
+
 # aut4 = duplication(aut5)
 # aut4.sauvegarder("automate4.txt")
-# aut4.to_png()
+# aut4.to_png('aut4')
 
-aut6 = Automate()
-aut6 = union(aut1, aut2)
-aut6.sauvegarder("automate6.txt")
-aut6.to_png()
+# aut6 = Automate()
+# aut6 = union(aut1, aut2)
+# aut6.completer()
+# aut6.determiniser()
+# aut6.sauvegarder("automate6.txt")
+# aut6.to_png('aut6')
