@@ -1,0 +1,24 @@
+digraph {
+	rankdir=LR
+	"(1 - 3)" [shape=circle]
+	"__(1 - 3)__" [shape=point]
+	"(1 - 3)" [shape=circle]
+	"__(1 - 3)__" -> "(1 - 3)"
+	"(1 - 3)" [shape=doublecircle]
+	"(1 - 2 - 3)" [shape=circle]
+	"(1 - 2 - 3)" [shape=doublecircle]
+	4 [shape=circle]
+	5 [shape=circle]
+	5 [shape=doublecircle]
+	"(4 - 5)" [shape=circle]
+	"(4 - 5)" [shape=doublecircle]
+	"(1 - 3)" -> "(1 - 2 - 3)" [label=a shape=circle]
+	"(1 - 3)" -> 4 [label=b shape=circle]
+	"(1 - 2 - 3)" -> "(1 - 2 - 3)" [label=a shape=circle]
+	"(1 - 2 - 3)" -> 4 [label=b shape=circle]
+	"(1 - 2 - 3)" -> 5 [label="c, d" shape=circle]
+	4 -> "(4 - 5)" [label=c shape=circle]
+	4 -> 5 [label=d shape=circle]
+	"(4 - 5)" -> "(4 - 5)" [label=c shape=circle]
+	"(4 - 5)" -> 5 [label=d shape=circle]
+}

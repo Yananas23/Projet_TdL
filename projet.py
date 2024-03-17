@@ -77,6 +77,7 @@ class Automate:
             dot.edge(str(transition[0]), str(transition[2]), label=transition[1], shape='circle')
         return dot
     
+    
     def to_png(self, file_name):
         '''Retourne une représentation graphique de l'automate sous forme d'image au format png'''
         return self.to_dot().render(filename=file_name, format='png')
@@ -136,49 +137,110 @@ class Automate:
                     self.ajouter_transition(etat, symbole, 'puit')
 
 
+    def table_transition(self):
+        '''Retourne la table de transition de l'automate'''
+        table = {}
+        for etat in self.etats:
+            table[etat] = {}
+            for symbole in self.alphabet:
+                table[etat][symbole] = [' ']
+        for transition in self.demonte():
+            if table[transition[0]][transition[1]][0] != ' ':
+                table[transition[0]][transition[1]].append(transition[2])
+            else:
+                table[transition[0]][transition[1]][0] = transition[2]
+        return table
+
+
+    def afficher_table_transition(self):
+        '''Affiche la table de transition de l'automate'''
+        table = self.table_transition()
+        for etat in self.etats:
+            print(etat, end=' ')
+            if etat in self.etats_initial:
+                print("I", end=' ')
+            else:
+                print(" ", end=' ')
+            if etat in self.etats_finaux:
+                print("F", end=' ')
+            else:
+                print(" ", end=' ')
+            for symbole in self.alphabet:
+                print(symbole, table[etat][symbole], end=' ')
+            print()
+
+
     def est_deterministe(self):
         '''Retourne True si l'automate est déterministe, False sinon'''
         if len(self.etats_initial) > 1:
             return False
+        table = self.table_transition()
         for etat in self.etats:
-            pass
-        
+            for symbole in self.alphabet:
+                if len(table[etat][symbole]) > 1:
+                    return False
+        return True
+
 
     def determiniser(self):
         '''Retourne un automate déterministe équivalent à l'automate'''
         aut = Automate()
         aut.alphabet = self.alphabet
-        if len(self.etats_initial) > 1:
-            initial = '(' + ' - '.join(self.etats_initial) + ')'
-            a_transitioner = [etat for etat in self.etats_initial]
-        else:
-            initial = self.etats_initial[0]
-            a_transitioner = [self.etats_initial[0]]
-        aut.ajouter_etat(initial, est_initial=True)
-        while a_transitioner:
-            print(a_transitioner)
-            for lettre in self.alphabet:
-                for transition in self.demonte():
-                    if transition[0] in a_transitioner:
-                        if transition[1] == lettre:
-                            if transition[2] not in a_transitioner:
-                                a_transitioner.append(transition[2])
-                                aut.ajouter_transition(initial, lettre, transition[2])
-            a_transitioner.pop(0)
-            
+        table = self.table_transition()
+        terminal = []
+        etats_a_traiter = [self.etats_initial]
+        aut.ajouter_etat('(' + ' - '.join(self.etats_initial) +')', est_initial=True)
         
-        
-        
-        
-        
-        
-        
-        
-        aut.to_png('aut')
-        
-            
+        while etats_a_traiter:
+            for symbole in self.alphabet: 
+                tour = []
+                for etat in etats_a_traiter[0]:
+                    if etat in self.etats_finaux and etats_a_traiter[0] not in terminal:
+                        terminal.append(etats_a_traiter[0])
+                    for i in range(len(table[etat][symbole])):
+                        if table[etat][symbole][0] != ' ' and table[etat][symbole][i] not in tour:
+                            tour.append(table[etat][symbole][i])
 
-       
+                for _ in range(len(tour)):
+                    if tour not in etats_a_traiter:
+                        etats_a_traiter.append(tour)
+
+                    if len(etats_a_traiter[0]) > 1:
+                        depart = '(' + ' - '.join(etats_a_traiter[0]) + ')'
+                    else:
+                        depart = etats_a_traiter[0][0]
+                    if depart not in aut.etats:
+                        aut.ajouter_etat(depart)
+
+                    if len(tour) > 1:
+                        arrive = '(' + ' - '.join(tour) + ')'
+                    else:
+                        arrive = tour[0]
+                    if arrive not in aut.etats:
+                        aut.ajouter_etat(arrive)
+
+                    if (depart, symbole, arrive) not in aut.transitions:
+                        aut.ajouter_transition(depart, symbole, arrive)
+                        
+            etats_a_traiter.pop(0)
+            
+        for etat in terminal:
+            if len(etat) > 1:
+                etat = '(' + ' - '.join(etat) + ')'
+            else:
+                etat = etat[0]
+            if etat in aut.etats:
+                aut.etats_finaux.append(etat)
+        
+        self.etats = aut.etats
+        self.etats_initial = aut.etats_initial
+        self.etats_finaux = aut.etats_finaux
+        self.transitions = aut.transitions
+        return
+
+
+
+
 # debut des fonctions            
             
 def copie(aut):
@@ -281,10 +343,10 @@ aut2.charger("automate2.txt")
 # aut3.sauvegarder("automate3.txt")
 # aut3.to_png('aut3')
 
-aut5 = Automate()
-aut5.charger("automate5.txt")
-aut5.determiniser()
-aut5.to_png('aut5')
+# aut5 = Automate()
+# aut5.charger("automate5.txt")
+# aut5.determiniser()
+# aut5.to_png('aut5')
 
 # aut4 = duplication(aut5)
 # aut4.sauvegarder("automate4.txt")
@@ -296,3 +358,10 @@ aut5.to_png('aut5')
 # aut6.determiniser()
 # aut6.sauvegarder("automate6.txt")
 # aut6.to_png('aut6')
+
+
+aut7 = Automate()
+aut7.charger("automate7.txt")
+aut7.determiniser()
+aut7.to_png('aut7')
+# aut7.sauvegarder("automate7.txt")
