@@ -109,7 +109,33 @@ class Automate:
         
         file.write(txt)
         file.close()
-    
+
+
+    def reconstruire(self, etats):
+        L_etat = []
+        i = 0
+        while i < len(etats):
+            if etats[i] == ' ' or etats[i] == '\n' or etats[i] == '\t':
+                pass
+            elif etats[i][0] == '(':
+                j = 0
+                multi_etat = '('
+                while etats[i + j] != ')':
+                    j += 1
+                    multi_etat = multi_etat + etats[i+j]
+                i += j
+                L_etat.append(multi_etat)
+            elif etats[i][0] == 'e' and i != len(etats) - 1:
+                if etats[i+1] == 'p' and etats[i+2] == 's' and etats[i+3] == 'i' and etats[i+4] == 'l' and etats[i+5] == 'o' and etats[i+6] == 'n':
+                    L_etat.append('epsilon')
+                    i += 6
+                else:
+                    L_etat.append(etats[i])
+            else:
+                L_etat.append(etats[i])
+            i += 1
+        return L_etat
+ 
     
     def charger(self, file_name):
         '''Charge un automate depuis un fichier texte avec une structure prédéfinie'''
@@ -118,12 +144,21 @@ class Automate:
         file.close()
         
         self.alphabet = lines[0].split()
-        self.etats = lines[1].split()
-        self.etats_initial = lines[2].split()
-        self.etats_finaux = lines[3].split()
+        
+        etat = self.reconstruire(lines[1])
+        for i in range(len(etat)):
+            self.ajouter_etat(etat[i])
+        
+        initial = self.reconstruire(lines[2])
+        for i in range(len(initial)):
+            self.etats_initial.append(initial[i])
+            
+        final = self.reconstruire(lines[3])
+        for i in range(len(final)):
+            self.etats_finaux.append(final[i])
         
         for transition in lines[4:]:
-            transition = transition.split()
+            transition = self.reconstruire(transition)
             self.ajouter_transition(transition[0], transition[1], transition[2])
             
             
@@ -239,7 +274,7 @@ class Automate:
         self.etats_initial = aut.etats_initial
         self.etats_finaux = aut.etats_finaux
         self.transitions = aut.transitions
-        return
+
 
 
 
@@ -340,10 +375,10 @@ def duplication(aut):
 
 
 
-aut1 = Automate()
-aut1.charger("automate1.txt")
-aut2 = Automate()
-aut2.charger("automate2.txt")
+# aut1 = Automate()
+# aut1.charger("automate1.txt")
+# aut2 = Automate()
+# aut2.charger("automate2.txt")
 
 # aut3 = concatenation(aut1, aut2)
 # aut3.sauvegarder("automate3.txt")
@@ -359,6 +394,7 @@ aut2.charger("automate2.txt")
 # aut4.to_png('aut4')
 
 # aut6 = Automate()
+# aut6.charger("automate6.txt")
 # aut6 = union(aut1, aut2)
 # # aut6.completer()
 # # aut6.determiniser()
@@ -366,8 +402,8 @@ aut2.charger("automate2.txt")
 # aut6.to_png('aut6')
 
 
-aut7 = Automate()
-aut7.charger("automate7.txt")
-aut7.determiniser()
-aut7.to_png('aut7')
-aut7.sauvegarder("automate7.txt")
+# aut7 = Automate()
+# aut7.charger("automate7.txt")
+# aut7.determiniser()
+# aut7.to_png('aut7')
+# aut7.sauvegarder("automate7.txt")
