@@ -189,7 +189,10 @@ class Automate:
         table = self.table_transition()
         terminal = []
         etats_a_traiter = [self.etats_initial]
-        aut.ajouter_etat('(' + ' - '.join(self.etats_initial) +')', est_initial=True)
+        if len(self.etats_initial) > 1:
+            aut.ajouter_etat('(' + ' - '.join(self.etats_initial) +')', est_initial=True)
+        else:
+            aut.ajouter_etat(self.etats_initial[0], est_initial=True)
         
         while etats_a_traiter:
             for symbole in self.alphabet: 
@@ -260,6 +263,7 @@ def union(aut1, aut2):
     aut3 = copie(aut1)
     aut3.etats_initial = []
     aut3.ajouter_etat('0', est_initial=True)
+    aut3.alphabet.append('epsilon')
     
     for lettre in aut2.alphabet:
         if lettre not in aut3.alphabet:
@@ -293,6 +297,7 @@ def concatenation(aut1, aut2):
     aut3 = Automate()
     last_etat = str(int(aut1.etats[-1]) + 1)
     aut3 = copie(aut1)
+    aut3.alphabet.append('epsilon')
     
     for lettre in aut2.alphabet:
         if lettre not in aut3.alphabet:
@@ -320,6 +325,7 @@ def duplication(aut):
     aut2 = Automate()
     aut2 = copie(aut)
     last_etat = str(int(aut.etats[-1]) + 1)
+    aut2.alphabet.append('epsilon')
     
     aut2.ajouter_etat(last_etat, est_initial=True, est_terminal=True)
     
@@ -352,12 +358,12 @@ aut2.charger("automate2.txt")
 # aut4.sauvegarder("automate4.txt")
 # aut4.to_png('aut4')
 
-# aut6 = Automate()
-# aut6 = union(aut1, aut2)
+aut6 = Automate()
+aut6 = union(aut1, aut2)
 # aut6.completer()
 # aut6.determiniser()
-# aut6.sauvegarder("automate6.txt")
-# aut6.to_png('aut6')
+aut6.sauvegarder("automate6.txt")
+aut6.to_png('aut6')
 
 
 aut7 = Automate()
