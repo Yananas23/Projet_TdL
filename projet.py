@@ -30,9 +30,11 @@ class Automate:
         '''Ajoute une transition à l'automate, si la transition existe déjà, les symboles sont concaténés'''
         for transition in self.transitions:
             if transition[0] == source and transition[2] == destination:
-                self.transitions.append((source, transition[1] + ', ' + symbole, destination))
-                self.transitions.remove(transition)
-                return
+                if symbole in transition[1]:
+                    return
+                else:
+                    symbole = transition[1] + ', ' + symbole
+                    self.transitions.remove(transition)
         self.transitions.append((source, symbole, destination))
         
         
@@ -88,12 +90,12 @@ class Automate:
         txt = ""
         file = open(file_name, "w")
         
-        for lettre in self.alphabet:
-            txt += lettre + " "
-        txt += "\n"
-        
         for etat in self.etats:
             txt += etat + " "
+        txt += "\n"
+        
+        for lettre in self.alphabet:
+            txt += lettre + " "
         txt += "\n"
         
         for etat in self.etats_initial:
@@ -112,25 +114,21 @@ class Automate:
 
 
     def reconstruire(self, etats):
+        '''Permet de construire une liste d'états à partir d'une chaine de caractères'''
         L_etat = []
         i = 0
         while i < len(etats):
             if etats[i] == ' ' or etats[i] == '\n' or etats[i] == '\t':
                 pass
             elif etats[i][0] == '(':
-                j = 0
-                multi_etat = '('
-                while etats[i + j] != ')':
-                    j += 1
-                    multi_etat = multi_etat + etats[i+j]
-                i += j
+                multi_etat = ''
+                while etats[i] != ')':
+                    multi_etat = multi_etat + etats[i]
+                    i += 1
                 L_etat.append(multi_etat)
-            elif etats[i][0] == 'e' and i != len(etats) - 1:
-                if etats[i+1] == 'p' and etats[i+2] == 's' and etats[i+3] == 'i' and etats[i+4] == 'l' and etats[i+5] == 'o' and etats[i+6] == 'n':
-                    L_etat.append('epsilon')
-                    i += 6
-                else:
-                    L_etat.append(etats[i])
+            elif etats[i][0] == 'E':
+                L_etat.append('Epsilon')
+                i += 6
             else:
                 L_etat.append(etats[i])
             i += 1
@@ -143,11 +141,11 @@ class Automate:
         lines = file.readlines()
         file.close()
         
-        self.alphabet = lines[0].split()
-        
-        etat = self.reconstruire(lines[1])
+        etat = self.reconstruire(lines[0])
         for i in range(len(etat)):
             self.ajouter_etat(etat[i])
+        
+        self.alphabet = lines[1].split()
         
         initial = self.reconstruire(lines[2])
         for i in range(len(initial)):
@@ -170,6 +168,14 @@ class Automate:
             for symbole in self.alphabet:
                 if symbole not in possede:
                     self.ajouter_transition(etat, symbole, 'puit')
+    
+    
+    def supprimer_puit(self):
+        '''Supprime l'état puit de l'automate'''
+        if 'puit' in self.etats:
+            while self.transitions[-1][2] == 'puit':
+                self.transitions.pop()
+            self.etats.remove('puit')
 
 
     def table_transition(self):
@@ -220,6 +226,7 @@ class Automate:
     def determiniser(self):
         '''Retourne un automate déterministe équivalent à l'automate'''
         aut = Automate()
+        self.supprimer_puit()
         aut.alphabet = self.alphabet
         table = self.table_transition()
         terminal = []
@@ -292,13 +299,13 @@ def copie(aut):
     return aut2
 
 
-def union(aut1, aut2):
+def union_automate(aut1, aut2):
     '''Retourne un automate qui est l'union des deux automates passés en paramètre'''
     aut3 = Automate()
     aut3 = copie(aut1)
     aut3.etats_initial = []
     aut3.ajouter_etat('0', est_initial=True)
-    aut3.alphabet.append('epsilon')
+    aut3.alphabet.append('Epsilon')
     
     for lettre in aut2.alphabet:
         if lettre not in aut3.alphabet:
@@ -320,19 +327,19 @@ def union(aut1, aut2):
         aut3.etats_finaux.append(str(int(etat) + int(last_etat)))
     
     for etat in aut1.etats_initial:
-        aut3.ajouter_transition('0', "epsilon", etat)
+        aut3.ajouter_transition('0', "Epsilon", etat)
     for etat in aut2.etats_initial:
-        aut3.ajouter_transition('0', "epsilon", str(int(etat) + int(last_etat)))
+        aut3.ajouter_transition('0', "Epsilon", str(int(etat) + int(last_etat)))
             
     return aut3
 
 
-def concatenation(aut1, aut2):
+def concatenation_automate(aut1, aut2):
     '''Retourne un automate qui est la concaténation des deux automates passés en paramètre'''
     aut3 = Automate()
     last_etat = str(int(aut1.etats[-1]) + 1)
     aut3 = copie(aut1)
-    aut3.alphabet.append('epsilon')
+    aut3.alphabet.append('Epsilon')
     
     for lettre in aut2.alphabet:
         if lettre not in aut3.alphabet:
@@ -348,26 +355,26 @@ def concatenation(aut1, aut2):
     aut3.etats_finaux = [str(int(etat) + int(last_etat)) for etat in aut2.etats_finaux]
     
     for etat in aut1.etats_finaux:
-        aut3.ajouter_transition(etat, "epsilon", last_etat)
-    for etat in aut2.etat_initial:
-        aut3.ajouter_transition(last_etat, "epsilon", str(int(etat) + int(last_etat)))
+        aut3.ajouter_transition(etat, "Epsilon", last_etat)
+    for etat in aut2.etats_initial:
+        aut3.ajouter_transition(last_etat, "Epsilon", str(int(etat) + int(last_etat)))
     
     return aut3
 
 
-def duplication(aut):
+def duplication_automate(aut):
     '''Retourne un automate qui est la duplication de l'automate passé en paramètre'''
     aut2 = Automate()
     aut2 = copie(aut)
     last_etat = str(int(aut.etats[-1]) + 1)
-    aut2.alphabet.append('epsilon')
+    aut2.alphabet.append('Epsilon')
     
     aut2.ajouter_etat(last_etat, est_initial=True, est_terminal=True)
     
     for etat in aut.etats_finaux:
-        aut2.ajouter_transition(etat, "epsilon", last_etat)
-    for etat in aut.etat_initial:
-        aut2.ajouter_transition(last_etat, "epsilon", etat)
+        aut2.ajouter_transition(etat, "Epsilon", last_etat)
+    for etat in aut.etats_initial:
+        aut2.ajouter_transition(last_etat, "Epsilon", etat)
   
     return aut2
 
@@ -375,31 +382,31 @@ def duplication(aut):
 
 
 
-# aut1 = Automate()
-# aut1.charger("automate1.txt")
-# aut2 = Automate()
-# aut2.charger("automate2.txt")
+aut1 = Automate()
+aut1.charger("automate1.txt")
+aut2 = Automate()
+aut2.charger("automate2.txt")
 
-# aut3 = concatenation(aut1, aut2)
+# aut3 = concatenation_automate(aut1, aut2)
 # aut3.sauvegarder("automate3.txt")
 # aut3.to_png('aut3')
 
-# aut5 = Automate()
-# aut5.charger("automate5.txt")
-# aut5.determiniser()
-# aut5.to_png('aut5')
+aut5 = Automate()
+aut5.charger("automate5.txt")
+aut5.determiniser()
+aut5.to_png('aut5')
 
-# aut4 = duplication(aut5)
-# aut4.sauvegarder("automate4.txt")
-# aut4.to_png('aut4')
+aut4 = duplication_automate(aut5)
+aut4.sauvegarder("automate4.txt")
+aut4.to_png('aut4')
 
-# aut6 = Automate()
-# aut6.charger("automate6.txt")
-# aut6 = union(aut1, aut2)
-# # aut6.completer()
-# # aut6.determiniser()
-# aut6.sauvegarder("automate6.txt")
-# aut6.to_png('aut6')
+aut6 = Automate()
+aut6.charger("automate6.txt")
+aut6 = union_automate(aut1, aut2)
+aut6.completer()
+aut6.determiniser()
+aut6.sauvegarder("automate6.txt")
+aut6.to_png('aut6')
 
 
 # aut7 = Automate()

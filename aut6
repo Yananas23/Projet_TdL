@@ -13,7 +13,7 @@ digraph {
 	3 [shape=doublecircle]
 	8 [shape=circle]
 	8 [shape=doublecircle]
-	0 -> "(1 - 6)" [label=epsilon shape=circle]
+	0 -> "(1 - 6)" [label=Epsilon shape=circle]
 	"(1 - 6)" -> "(2 - 7)" [label=a shape=circle]
 	"(1 - 6)" -> "(4 - 9)" [label=b shape=circle]
 	"(2 - 7)" -> "(2 - 7)" [label="a, b" shape=circle]
