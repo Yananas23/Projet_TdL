@@ -107,6 +107,8 @@ class Automate:
         txt += "\n"
         
         for transition in self.demonte():
+            if transition[1] == "ε":
+                transition[1] = "E"
             txt += transition[0] + " " + transition[1] + " " + transition[2] + "\n"
         
         file.write(txt)
@@ -127,7 +129,7 @@ class Automate:
                     i += 1
                 L_etat.append(multi_etat)
             elif etats[i][0] == 'E':
-                L_etat.append('Epsilon')
+                L_etat.append("ε")
                 i += 6
             else:
                 L_etat.append(etats[i])
@@ -228,49 +230,23 @@ class Automate:
         aut = Automate()
         self.supprimer_puit()
         aut.alphabet = self.alphabet
-        table = self.table_transition()
-        print(table)
-        # for t in table:
-        #     print(t, end=' ')
         terminal = []
         etats_a_traiter = [self.etats_initial]
-        if len(self.etats_initial) > 1:
-            aut.ajouter_etat('(' + ' - '.join(self.etats_initial) +')', est_initial=True)
-        else:
-            aut.ajouter_etat(self.etats_initial[0], est_initial=True)
         
-        while etats_a_traiter:
+        for i in range(len(etats_a_traiter)):
             for symbole in self.alphabet: 
                 tour = []
-                for etat in etats_a_traiter[0]:
+                for etat in etats_a_traiter[i]:
                     if etat in self.etats_finaux and etats_a_traiter[0] not in terminal:
                         terminal.append(etats_a_traiter[0])
-                    for i in range(len(table[etat][symbole])):
-                        if table[etat][symbole][0] != ' ' and table[etat][symbole][i] not in tour:
-                            tour.append(table[etat][symbole][i])
+                    for transition in self.transitions:
+                        if transition[0] == etat and transition[1] == symbole and transition[2] not in tour:
+                            tour.append(transition[2])
 
                 for _ in range(len(tour)):
-                    if tour not in etats_a_traiter:
-                        etats_a_traiter.append(tour)
+                    if (etats_a_traiter[i], symbole, tour) not in aut.transitions:
+                        aut.ajouter_transition(etats_a_traiter[i], symbole, tour)
 
-                    if len(etats_a_traiter[0]) > 1:
-                        depart = '(' + ' - '.join(etats_a_traiter[0]) + ')'
-                    else:
-                        depart = etats_a_traiter[0][0]
-                    if depart not in aut.etats:
-                        aut.ajouter_etat(depart)
-
-                    if len(tour) > 1:
-                        arrive = '(' + ' - '.join(tour) + ')'
-                    else:
-                        arrive = tour[0]
-                    if arrive not in aut.etats:
-                        aut.ajouter_etat(arrive)
-
-                    if (depart, symbole, arrive) not in aut.transitions:
-                        aut.ajouter_transition(depart, symbole, arrive)
-                        
-            etats_a_traiter.pop(0)
             
         for etat in terminal:
             if len(etat) > 1:
@@ -279,6 +255,11 @@ class Automate:
                 etat = etat[0]
             if etat in aut.etats:
                 aut.etats_finaux.append(etat)
+        
+        if len(self.etats_initial) > 1:
+            aut.ajouter_etat('(' + ' - '.join(self.etats_initial) +')', est_initial=True)
+        else:
+            aut.ajouter_etat(self.etats_initial[0], est_initial=True)
         
         self.etats = aut.etats
         self.etats_initial = aut.etats_initial
