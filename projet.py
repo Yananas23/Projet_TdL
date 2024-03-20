@@ -229,6 +229,9 @@ class Automate:
         self.supprimer_puit()
         aut.alphabet = self.alphabet
         table = self.table_transition()
+        print(table)
+        # for t in table:
+        #     print(t, end=' ')
         terminal = []
         etats_a_traiter = [self.etats_initial]
         if len(self.etats_initial) > 1:
@@ -305,7 +308,6 @@ def union_automate(aut1, aut2):
     aut3 = copie(aut1)
     aut3.etats_initial = []
     aut3.ajouter_etat('0', est_initial=True)
-    aut3.alphabet.append('Epsilon')
     
     for lettre in aut2.alphabet:
         if lettre not in aut3.alphabet:
@@ -327,9 +329,9 @@ def union_automate(aut1, aut2):
         aut3.etats_finaux.append(str(int(etat) + int(last_etat)))
     
     for etat in aut1.etats_initial:
-        aut3.ajouter_transition('0', "Epsilon", etat)
+        aut3.ajouter_transition('0', "ε", etat)
     for etat in aut2.etats_initial:
-        aut3.ajouter_transition('0', "Epsilon", str(int(etat) + int(last_etat)))
+        aut3.ajouter_transition('0', "ε", str(int(etat) + int(last_etat)))
             
     return aut3
 
@@ -339,7 +341,6 @@ def concatenation_automate(aut1, aut2):
     aut3 = Automate()
     last_etat = str(int(aut1.etats[-1]) + 1)
     aut3 = copie(aut1)
-    aut3.alphabet.append('Epsilon')
     
     for lettre in aut2.alphabet:
         if lettre not in aut3.alphabet:
@@ -355,9 +356,9 @@ def concatenation_automate(aut1, aut2):
     aut3.etats_finaux = [str(int(etat) + int(last_etat)) for etat in aut2.etats_finaux]
     
     for etat in aut1.etats_finaux:
-        aut3.ajouter_transition(etat, "Epsilon", last_etat)
+        aut3.ajouter_transition(etat, "ε", last_etat)
     for etat in aut2.etats_initial:
-        aut3.ajouter_transition(last_etat, "Epsilon", str(int(etat) + int(last_etat)))
+        aut3.ajouter_transition(last_etat, "ε", str(int(etat) + int(last_etat)))
     
     return aut3
 
@@ -367,14 +368,13 @@ def duplication_automate(aut):
     aut2 = Automate()
     aut2 = copie(aut)
     last_etat = str(int(aut.etats[-1]) + 1)
-    aut2.alphabet.append('Epsilon')
     
     aut2.ajouter_etat(last_etat, est_initial=True, est_terminal=True)
     
     for etat in aut.etats_finaux:
-        aut2.ajouter_transition(etat, "Epsilon", last_etat)
+        aut2.ajouter_transition(etat, "ε", last_etat)
     for etat in aut.etats_initial:
-        aut2.ajouter_transition(last_etat, "Epsilon", etat)
+        aut2.ajouter_transition(last_etat, "ε", etat)
   
     return aut2
 
@@ -387,26 +387,26 @@ aut1.charger("automate1.txt")
 aut2 = Automate()
 aut2.charger("automate2.txt")
 
-# aut3 = concatenation_automate(aut1, aut2)
+aut3 = concatenation_automate(aut1, aut2)
 # aut3.sauvegarder("automate3.txt")
-# aut3.to_png('aut3')
+aut3.to_png('aut3')
 
-aut5 = Automate()
-aut5.charger("automate5.txt")
-aut5.determiniser()
-aut5.to_png('aut5')
+# aut5 = Automate()
+# aut5.charger("automate5.txt")
+# aut5.determiniser()
+# aut5.to_png('aut5')
 
-aut4 = duplication_automate(aut5)
-aut4.sauvegarder("automate4.txt")
-aut4.to_png('aut4')
+# aut4 = duplication_automate(aut5)
+# aut4.sauvegarder("automate4.txt")
+# aut4.to_png('aut4')
 
-aut6 = Automate()
-aut6.charger("automate6.txt")
-aut6 = union_automate(aut1, aut2)
-aut6.completer()
-aut6.determiniser()
-aut6.sauvegarder("automate6.txt")
-aut6.to_png('aut6')
+# aut6 = Automate()
+# aut6.charger("automate6.txt")
+# aut6 = union_automate(aut1, aut2)
+# aut6.completer()
+# aut6.determiniser()
+# aut6.sauvegarder("automate6.txt")
+# aut6.to_png('aut6')
 
 
 # aut7 = Automate()
