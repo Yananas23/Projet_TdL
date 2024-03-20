@@ -35,7 +35,7 @@ class Automate:
                 else:
                     symbole = transition[1] + ', ' + symbole
                     self.transitions.remove(transition)
-        self.transitions.append((source, symbole, destination))
+        self.transitions.append([source, symbole, destination])
         
         
     def __str__(self):
@@ -58,7 +58,7 @@ class Automate:
                 demonte.append(transition)
             else:
                 for symbole in transition[1].split(', '):
-                    demonte.append((transition[0], symbole, transition[2]))
+                    demonte.append([transition[0], symbole, transition[2]])
         return demonte
             
     
@@ -160,7 +160,15 @@ class Automate:
         for transition in lines[4:]:
             transition = self.reconstruire(transition)
             self.ajouter_transition(transition[0], transition[1], transition[2])
-            
+           
+    
+    def reset(self):
+        '''Réinitialise l'automate'''
+        self.alphabet = []
+        self.etats = []
+        self.etats_initial = []
+        self.etats_finaux = []
+        self.transitions = [] 
             
     def completer(self):
         '''Complète l'automate pour qu'il soit complet'''
@@ -223,6 +231,15 @@ class Automate:
                 if len(table[etat][symbole]) > 1:
                     return False
         return True
+    
+
+    def concatener(self, ceci):
+        '''Retourne une chaine de caractères concaténée à partir d'une liste de caractères'''
+        if len(ceci) > 1:
+            ceci = '(' + ' - '.join(ceci) + ')'
+        else:
+            ceci = ceci[0]
+        return ceci
 
 
     def determiniser(self):
@@ -230,41 +247,44 @@ class Automate:
         aut = Automate()
         self.supprimer_puit()
         aut.alphabet = self.alphabet
-        terminal = []
         etats_a_traiter = [self.etats_initial]
+        etats_finaux = self.etats_finaux
+        aut.ajouter_etat(self.etats_initial)
         
-        for i in range(len(etats_a_traiter)):
+        while etats_a_traiter:
             for symbole in self.alphabet: 
                 tour = []
-                for etat in etats_a_traiter[i]:
-                    if etat in self.etats_finaux and etats_a_traiter[0] not in terminal:
-                        terminal.append(etats_a_traiter[0])
-                    for transition in self.transitions:
-                        if transition[0] == etat and transition[1] == symbole and transition[2] not in tour:
-                            tour.append(transition[2])
+                for transition in self.transitions:
+                    if transition[0] in etats_a_traiter[0] and symbole in transition[1] and transition[2] not in tour:
+                        tour.append(transition[2])
 
                 for _ in range(len(tour)):
-                    if (etats_a_traiter[i], symbole, tour) not in aut.transitions:
-                        aut.ajouter_transition(etats_a_traiter[i], symbole, tour)
+                    if tour not in etats_a_traiter:
+                        etats_a_traiter.append(tour)
+                        aut.ajouter_etat(tour)
+                    if (etats_a_traiter[0], symbole, tour) not in aut.transitions:
+                        aut.ajouter_transition(etats_a_traiter[0], symbole, tour)
+        
+            etats_a_traiter.pop(0)
 
-            
-        for etat in terminal:
-            if len(etat) > 1:
-                etat = '(' + ' - '.join(etat) + ')'
-            else:
-                etat = etat[0]
-            if etat in aut.etats:
-                aut.etats_finaux.append(etat)
-        
-        if len(self.etats_initial) > 1:
-            aut.ajouter_etat('(' + ' - '.join(self.etats_initial) +')', est_initial=True)
-        else:
-            aut.ajouter_etat(self.etats_initial[0], est_initial=True)
-        
-        self.etats = aut.etats
-        self.etats_initial = aut.etats_initial
-        self.etats_finaux = aut.etats_finaux
-        self.transitions = aut.transitions
+        self.reset()
+        self.alphabet = aut.alphabet
+
+        initial = True
+        for etat in aut.etats:
+            terminal = False
+            etat = aut.concatener(etat)
+            for finaux in etats_finaux:
+                if finaux in etat:
+                    terminal = True
+            self.ajouter_etat(etat, est_initial=initial, est_terminal=terminal)
+            if initial:
+                initial = False
+
+        for transition in aut.transitions:
+            transition[0] = aut.concatener(transition[0])
+            transition[2] = aut.concatener(transition[2])            
+            self.ajouter_transition(transition[0], transition[1], transition[2])
 
 
 
@@ -368,9 +388,9 @@ aut1.charger("automate1.txt")
 aut2 = Automate()
 aut2.charger("automate2.txt")
 
-aut3 = concatenation_automate(aut1, aut2)
+# aut3 = concatenation_automate(aut1, aut2)
 # aut3.sauvegarder("automate3.txt")
-aut3.to_png('aut3')
+# aut3.to_png('aut3')
 
 # aut5 = Automate()
 # aut5.charger("automate5.txt")
@@ -390,8 +410,8 @@ aut3.to_png('aut3')
 # aut6.to_png('aut6')
 
 
-# aut7 = Automate()
-# aut7.charger("automate7.txt")
-# aut7.determiniser()
-# aut7.to_png('aut7')
-# aut7.sauvegarder("automate7.txt")
+aut7 = Automate()
+aut7.charger("automate7.txt")
+aut7.determiniser()
+aut7.to_png('aut7')
+aut7.sauvegarder("automate7.txt")
