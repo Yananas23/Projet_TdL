@@ -1,0 +1,18 @@
+digraph {
+	rankdir=LR
+	A [shape=circle]
+	__A__ [shape=point]
+	A [shape=circle]
+	__A__ -> A
+	B [shape=circle]
+	C [shape=circle]
+	C [shape=doublecircle]
+	D [shape=circle]
+	A -> B [label=a shape=circle]
+	A -> C [label=b shape=circle]
+	B -> A [label=a shape=circle]
+	B -> D [label=b shape=circle]
+	C -> B [label=a shape=circle]
+	C -> C [label=b shape=circle]
+	D -> D [label="a, b" shape=circle]
+}

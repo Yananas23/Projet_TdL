@@ -1,0 +1,26 @@
+1 1a 1b 1c 2a 2b 2c 3a 3b 4b 5 
+a b 
+1 5 1a 1b 1c 
+2c 
+1a a 2a
+1b b 2b
+2a a 3a
+2b b 2b
+2b a 3b
+3a ε 1c
+3a ε 5
+3b a 4b
+4b ε 5
+4b ε 1c
+1c b 2c
+2c b 2c
+5 ε 1
+5 ε 1c
+3a ε 1
+3a ε 1a
+3a ε 1b
+4b ε 1
+4b ε 1a
+4b ε 1b
+5 ε 1a
+5 ε 1b

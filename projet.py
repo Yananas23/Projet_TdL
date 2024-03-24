@@ -20,12 +20,13 @@ class Automate:
 
     def ajouter_etat(self, id, est_initial=False, est_terminal=False) :
         '''Ajoute un état à l'automate, est défini si il est initial ou terminal'''
-        self.etats.append(id)
-        if est_initial:
-            self.etats_initial.append(id)
-        if est_terminal:
-            self.etats_finaux.append(id)
-        self.nb_trans[id] = [0,0]
+        if id not in self.etats:
+            self.etats.append(id)
+            if est_initial:
+                self.etats_initial.append(id)
+            if est_terminal:
+                self.etats_finaux.append(id)
+            self.nb_trans[id] = [0,0]
 
 
     def ajouter_initial(self, etat):
@@ -43,7 +44,7 @@ class Automate:
         elif etat not in self.etats_finaux:
             self.etats_finaux.append(etat)
 
-            
+     
     def supprimer_etat(self, etat):
         '''Supprime un état de l'automate'''
         if etat in self.etats:
@@ -53,34 +54,55 @@ class Automate:
         if etat in self.etats_finaux:
             self.etats_finaux.remove(etat)
         for transition in self.transitions:
-            if transition[0] == etat or transition[2] == etat:
-                self.transitions.remove(transition)
+            if etat == transition[0] or etat == transition[2]:
+                self.supprimer_transition(transition[0], transition[1], transition[2])
 
 
     def ajouter_transition(self, source, symbole, destination):
         '''Ajoute une transition à l'automate, si la transition existe déjà, les symboles sont concaténés'''
-        for transition in self.transitions:
-            if transition[0] == source and transition[2] == destination:
-                if symbole in transition[1]:
-                    return
-                else:
-                    symbole = transition[1] + ', ' + symbole
-                    self.transitions.remove(transition)
-        self.transitions.append([source, symbole, destination])
-        self.nb_trans[source][0] += 1
-        self.nb_trans[destination][1] += 1
+        if [source, symbole, destination] not in self.transitions:
+            self.transitions.append([source, symbole, destination])
+            self.nb_trans[source][0] += 1
+            self.nb_trans[destination][1] += 1
 
 
-    def supprimer_transition(self, source, symbole, destination):
+    def supprimer_transition(self, source=None, symbole=None, destination=None):
         '''Supprime une transition de l'automate'''
         for transition in self.transitions:
-            if transition[0] == source and transition[1] == symbole and transition[2] == destination:
+            if source == None:
+                if symbole == transition[1] and destination == transition[2]:
+                    self.transitions.remove(transition)
+                elif destination == transition[2]:
+                    self.transitions.remove(transition)
+                self.nb_trans[transition[0]][0] -= 1
+                self.nb_trans[transition[2]][1] -= 1
+            elif symbole == None:
+                if source == transition[0] and destination == transition[2]:
+                    self.transitions.remove(transition)
+                elif destination == transition[2]:
+                    self.transitions.remove(transition)
+                self.nb_trans[transition[0]][0] -= 1
+                self.nb_trans[transition[2]][1] -= 1
+            elif destination == None:
+                if source == transition[0] and symbole == transition[1]: 
+                    self.transitions.remove(transition)
+                elif source == transition[0]:
+                    self.transitions.remove(transition)
+                self.nb_trans[transition[0]][0] -= 1
+                self.nb_trans[transition[2]][1] -= 1
+            elif transition[0] == source and transition[1] == symbole and transition[2] == destination:
                 self.transitions.remove(transition)
-                self.nb_trans[source][0] -= 1
-                self.nb_trans[destination][1] -= 1
-            for etat in self.etats:
-                if self.nb_trans[etat][1] == 0:
-                    self.supprimer_etat(etat)
+                self.nb_trans[transition[0]][0] -= 1
+                self.nb_trans[transition[2]][1] -= 1
+
+
+    def copie(self, aut):
+        '''Retourne une copie de l'automate passé en paramètre'''
+        self.alphabet = [lettre for lettre in aut.alphabet]
+        self.etats = [etat for etat in aut.etats]
+        self.etats_initial = [etat for etat in aut.etats_initial]
+        self.etats_finaux = [etat for etat in aut.etats_finaux]
+        self.transitions = [transition for transition in aut.transitions]
 
 
     def __str__(self):
@@ -107,6 +129,22 @@ class Automate:
         return demonte
 
 
+    def concatenation_transitions(self):
+        '''Retourne une liste de transitions où chaque transition est concaténée en une transition par état de l'automate'''
+        conca_trans = []
+        for etat1 in self.etats:
+            for etat2 in self.etats:  
+                concac = []
+                for transition in self.transitions:
+                    if transition[0] == etat1 and transition[2] == etat2:
+                        if transition[1] not in concac:
+                            concac.append(transition[1])
+                if len(concac) > 0:
+                    symbole = ', '.join(concac)
+                    conca_trans.append([etat1, symbole, etat2])
+        return conca_trans
+
+
     def to_dot(self):
         '''Retourne une représentation graphique de l'automate sous forme de graphe avec la librairie graphviz'''
         dot = gv.Digraph()
@@ -120,7 +158,7 @@ class Automate:
                 dot.edge(initial, str(etat))
             if etat in self.etats_finaux:
                 dot.node(str(etat), shape='doublecircle')
-        for transition in self.transitions:
+        for transition in self.concatenation_transitions():
             dot.edge(str(transition[0]), str(transition[2]), label=transition[1], shape='circle')
         return dot
 
@@ -151,7 +189,7 @@ class Automate:
             txt += etat + " "
         txt += "\n"
 
-        for transition in self.demonte():
+        for transition in self.transitions:
             txt += transition[0] + " " + transition[1] + " " + transition[2] + "\n"
 
         file.write(txt)
@@ -162,17 +200,20 @@ class Automate:
         '''Permet de construire une liste d'états à partir d'une chaine de caractères'''
         L_etat = []
         i = 0
+        etat = ''
         while i < len(etats):
-            if etats[i] == ' ' or etats[i] == '\n' or etats[i] == '\t':
-                pass
-            elif etats[i][0] == '(':
-                multi_etat = '('
+            if etats[i] == '(':
+                etat = '('
                 while etats[i] != ')':
                     i += 1
-                    multi_etat = multi_etat + etats[i]
-                L_etat.append(multi_etat)
-            else:    
-                L_etat.append(etats[i])
+                    etat += etats[i]
+                L_etat.append(etat)
+                etat = ''
+            elif etats[i] not in ' \n\t':
+                etat += etats[i]
+            if etats[i] in ' \n\t' and etat != '':
+                L_etat.append(etat)
+                etat = ''
             i += 1
         return L_etat
 
@@ -209,19 +250,6 @@ class Automate:
         self.etats_initial = []
         self.etats_finaux = []
         self.transitions = [] 
-        
-        
-    def rec_transition(self, depart, arrivee, symbole):
-        '''Retourne True et créé une transition si une transition est possible entre deux états, False sinon'''
-        if depart == arrivee:
-            return True
-    
-        for transition in self.transitions:
-            if transition[1] == "ε" and transition[0] == depart:
-                if self.rec_transition(transition[2], arrivee, symbole):
-                    self.ajouter_transition(arrivee, symbole, depart)
-                    return True
-        return False
 
 
     def epsilon_cloture(self, symbole):
@@ -247,39 +275,43 @@ class Automate:
                 if transition[0] == etat and transition[1] == "ε":
                     self.ajouter_initial(transition[2])
 
+    def nb_epsilon(self, etat):
+        nb = [0,0]
+        for transition in self.transitions:
+            if transition[0] == etat and transition[1] != "ε":
+                nb[0] += 1
+            if transition[2] == etat and transition[1] != "ε":
+                nb[1] += 1
+        return nb
+
 
     def epsilon_supprimer(self):
         '''Supprime les transitions epsilon de l'automate'''
         for etat in self.etats:
-            for etat2 in self.etats:
-                for transition in self.transitions:
-                    for transition2 in self.transitions:
-                        if (transition[0] == etat and transition[1] != "ε" and transition[2] == etat2) and (transition2[0] == etat2 and transition2[1] == "ε" and transition2[2] == etat):
-                            transition2[1] = transition[1]
+            nb = self.nb_epsilon(etat)
+            if nb[0] == 0 and nb[1] == 0:
+                for _ in range(self.nb_trans[etat][0]):
+                    self.supprimer_transition(source=etat, symbole="ε")
+                
+            
         
-        for transition in self.transitions:
-            self.rec_transition(transition[2], transition[0], transition[1])
         
-        suppresseur = []
-        for transition in self.transitions:
-            if transition[1] == "ε":
-                suppresseur.append(transition)
-        for transition in suppresseur:
-            self.supprimer_transition(transition[0], transition[1], transition[2])
 
 
     def synchroniser(self):
         '''réalise la suppression des epsilons transitions de l'automate'''
-        self.epsilon_cloture("ε")
-        self.epsilon_initial()
-        self.epsilon_supprimer()
+        pass
+        # self.epsilon_cloture("ε")
+        # self.epsilon_initial()
+        # self.epsilon_supprimer()
+        # print(self.nb_trans)
 
 
     def completer(self):
         '''Complète l'automate pour qu'il soit complet'''
         self.ajouter_etat('puit')
         for etat in self.etats:
-            possede = [transition[1] for transition in self.demonte() if transition[0] == etat]
+            possede = [transition[1] for transition in self.transitions if transition[0] == etat]
             for symbole in self.alphabet:
                 if symbole not in possede:
                     self.ajouter_transition(etat, symbole, 'puit')
@@ -301,7 +333,7 @@ class Automate:
             for symbole in self.alphabet:
                 table[etat][symbole] = [' ']
             table[etat]['ε'] = [' ']
-        for transition in self.demonte():
+        for transition in self.transitions:
             if table[transition[0]][transition[1]][0] != ' ':
                 table[transition[0]][transition[1]].append(transition[2])
             else:
@@ -342,8 +374,10 @@ class Automate:
 
     def concatener(self, ceci):
         '''Retourne une chaine de caractères concaténée à partir d'une liste de caractères'''
-        if len(ceci) > 1:
+        if len(ceci) > 1 and ceci[0] != '(':
             ceci = '(' + ' - '.join(ceci) + ')'
+        elif len(ceci) > 1 and ceci[0] == '(':
+            ceci = ceci
         else:
             ceci = ceci[0]
         return ceci
@@ -353,11 +387,12 @@ class Automate:
         '''Retourne un automate déterministe équivalent à l'automate'''
         aut = Automate()
         self.supprimer_puit()
-        self.synchroniser()
+        # self.synchroniser()
         aut.alphabet = self.alphabet
         etats_a_traiter = [self.etats_initial]
+        already_done = []
         etats_finaux = self.etats_finaux
-        aut.ajouter_etat(self.etats_initial)
+        aut.ajouter_etat(aut.concatener(self.etats_initial))
 
         while etats_a_traiter:
             for symbole in self.alphabet: 
@@ -368,16 +403,18 @@ class Automate:
 
                 for _ in range(len(tour)):
                     if tour not in etats_a_traiter:
-                        etats_a_traiter.append(tour)
-                        aut.ajouter_etat(tour)
+                        if etats_a_traiter[0] not in already_done:
+                            etats_a_traiter.append(tour)
+                            aut.ajouter_etat(aut.concatener(tour))
                     if (etats_a_traiter[0], symbole, tour) not in aut.transitions:
-                        aut.ajouter_transition(etats_a_traiter[0], symbole, tour)
+                        depart = aut.concatener(etats_a_traiter[0])
+                        arrivee = aut.concatener(tour)
+                        aut.ajouter_transition(depart, symbole, arrivee)
 
-            etats_a_traiter.pop(0)
+            already_done.append(etats_a_traiter.pop(0))
 
         self.reset()
         self.alphabet = aut.alphabet
-
         initial = True
         for etat in aut.etats:
             terminal = False
@@ -395,26 +432,84 @@ class Automate:
             self.ajouter_transition(transition[0], transition[1], transition[2])
 
 
+    def find_index(self, lst, value):
+        '''Retourne une liste des indexes où la valeur est présente dans la liste'''
+        indexes = []
+        for i, elem in enumerate(lst):
+            if elem == value:
+                indexes.append(i)
+        return indexes
+
+
+    def moore(self, partition):
+        '''Realise l'algorithme de Moore pour minimiser l'automate'''
+        while partition[0] != partition[-1]:
+            for symbole in range(len(self.alphabet)):
+                for etat in range(len(self.etats)):
+                    for transition in self.transitions:
+                        if transition[0] == self.etats[etat] and transition[1] == self.alphabet[symbole]:
+                            partition[symbole + 1][etat] = partition[0][self.etats.index(transition[2])]
+
+            diff_part = []
+            diff = ''
+            for etat in range(len(self.etats)):
+                for part in range(len(partition) - 1):
+                    diff = diff + partition[part][etat]
+                diff_part.append(diff)
+                diff = ''
+
+            modified_indexes = [False] * len(partition[-1])
+            refined = 'A'
+            for part in diff_part:
+                update_refine = False
+                for i in self.find_index(diff_part, part):
+                    if not modified_indexes[i]:
+                        partition[-1][i] = refined
+                        modified_indexes[i] = True
+                        update_refine = True
+                if update_refine:
+                    refined = chr(ord(refined) + 1)
+
+            if partition[0] == partition[-1]:
+                return partition
+            else: 
+                partition[0] = partition[-1]
+                partition[-1] = [0] * len(self.etats)
+
+
+    def minimiser(self):
+        '''Retourne un automate minimal équivalent à l'automate'''
+        self.determiniser()
+        self.completer()
+        
+        partition = [['A'] * len(self.etats) for _ in range(len(self.alphabet) + 2)]
+        for i in range(len(self.etats)):
+            if self.etats[i] in self.etats_finaux:
+                partition[0][i] = 'B'
+                
+        self.moore(partition)
+        aut = Automate()
+        aut.alphabet = self.alphabet
+        for i in range(len(partition[-1])):
+            aut.ajouter_etat(partition[-1][i])
+            if self.etats[i] in self.etats_initial:
+                aut.ajouter_initial(partition[-1][i])
+            if self.etats[i] in self.etats_finaux:
+                aut.ajouter_final(partition[-1][i])
+                
+        for transition in self.transitions:
+            aut.ajouter_transition(partition[-1][self.etats.index(transition[0])], transition[1], partition[-1][self.etats.index(transition[2])])
+        
+        self.reset()
+        self.copie(aut)
 
 
 
 # debut des fonctions            
-
-def copie(aut):
-    '''Retourne une copie de l'automate passé en paramètre'''
-    aut2 = Automate()
-    aut2.alphabet = [lettre for lettre in aut.alphabet]
-    aut2.etats = [etat for etat in aut.etats]
-    aut2.etats_initial = [etat for etat in aut.etats_initial]
-    aut2.etats_finaux = [etat for etat in aut.etats_finaux]
-    aut2.transitions = [transition for transition in aut.transitions]
-    return aut2
-
-
 def union_automate(aut1, aut2):
     '''Retourne un automate qui est l'union des deux automates passés en paramètre'''
     aut3 = Automate()
-    aut3 = copie(aut1)
+    aut3.copie(aut1)
     aut3.etats_initial = []
     aut3.ajouter_etat('0', est_initial=True)
 
@@ -449,7 +544,7 @@ def concatenation_automate(aut1, aut2):
     '''Retourne un automate qui est la concaténation des deux automates passés en paramètre'''
     aut3 = Automate()
     last_etat = str(int(aut1.etats[-1]) + 1)
-    aut3 = copie(aut1)
+    aut3.copie(aut1)
 
     for lettre in aut2.alphabet:
         if lettre not in aut3.alphabet:
@@ -475,7 +570,7 @@ def concatenation_automate(aut1, aut2):
 def duplication_automate(aut):
     '''Retourne un automate qui est la duplication de l'automate passé en paramètre'''
     aut2 = Automate()
-    aut2 = copie(aut)
+    aut2.copie(aut)
     last_etat = str(int(aut.etats[-1]) + 1)
 
     aut2.ajouter_etat(last_etat, est_initial=True, est_terminal=True)
@@ -506,11 +601,12 @@ def duplication_automate(aut):
 # aut5.to_png('aut5')
 
 # aut4 = duplication_automate(aut5)
-aut4 = Automate()
-aut4.charger("automate4.txt")
-aut4.synchroniser()
-aut4.sauvegarder("automate4.txt")
-aut4.to_png('aut4')
+# aut4 = Automate()
+# aut4.charger("automate4.txt")
+# aut4.to_png('aut4h')
+# aut4.synchroniser()
+# aut4.sauvegarder("automate4.txt")
+# aut4.to_png('aut4')
 
 # aut6 = Automate()
 # aut6.charger("automate6.txt")
@@ -520,9 +616,26 @@ aut4.to_png('aut4')
 # aut6.sauvegarder("automate6.txt")
 # aut6.to_png('aut6')
 
-
 # aut7 = Automate()
 # aut7.charger("automate7.txt")
 # aut7.determiniser()
 # aut7.to_png('aut7')
 # aut7.sauvegarder("automate7.txt")
+
+# aut8 = Automate()
+# aut8.charger("automate8.txt")
+# aut8.minimiser()
+# aut8.to_png('aut8')
+
+# aut4 = Automate()
+# aut4.charger("automate4.txt")
+# aut4.to_png('aut4h')
+# aut4.synchroniser()
+# aut4.to_png('aut4')
+
+# aut9 = Automate()
+# aut9.charger("automate9.txt")
+# aut9.to_png('aut9')
+# aut9.synchroniser()
+# aut9.sauvegarder("automate9_s.txt")
+# aut9.to_png('aut9_s')
