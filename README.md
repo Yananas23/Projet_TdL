@@ -18,7 +18,7 @@ Si vous utilisez pip, vous pouvez installer graphviz en utilisant la commande su
 pip install graphviz
 ```
 
-Utilisation
+# Utilisation
 Le code définit une classe Automate qui représente un AFD. La classe contient plusieurs méthodes pour ajouter et supprimer des états et des transitions, définir l'alphabet, les états initiaux et finaux, et effectuer diverses opérations telles que déterminer si l'AFD est déterministe, minimiser le nombre d'états, et convertir l'AFD en une représentation graphique à l'aide de la bibliothèque graphviz.
 
 La classe Automate a les méthodes suivantes :
@@ -60,7 +60,7 @@ minimiser : Retourne un automate minimal équivalent à l'automate.
 accepte_mot : Retourne vrai si le mot est accepté par l'automate, faux sinon.
 De plus, il existe trois fonctions union_automate, concatenation_automate, et duplication_automate qui effectuent des opérations d'union, de concaténation et de duplication sur deux ou plusieurs automates.
 
-Exemple
+# Exemple
 Voici un exemple d'utilisation de la classe Automate :
 
 ```
