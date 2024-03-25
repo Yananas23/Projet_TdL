@@ -340,8 +340,6 @@ class Automate:
             self.supprimer_etat(etat)
 
 
-
-
     def synchroniser(self):
         '''réalise la suppression des epsilons transitions de l'automate'''
         self.epsilon_cloture("ε")
