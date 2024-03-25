@@ -300,9 +300,8 @@ class Automate:
 
     def synchroniser(self):
         '''réalise la suppression des epsilons transitions de l'automate'''
-        pass
-        # self.epsilon_cloture("ε")
-        # self.epsilon_initial()
+        self.epsilon_cloture("ε")
+        self.epsilon_initial()
         # self.epsilon_supprimer()
         # print(self.nb_trans)
 
@@ -504,6 +503,18 @@ class Automate:
         self.copie(aut)
 
 
+    def accepte_mot(self, mot):
+        '''Retourne True si le mot est accepté par l'automate, False sinon'''
+        etat = self.etats_initial[0]
+        for i in range(len(mot)):
+            for transition in self.transitions:
+                if transition[0] == etat and transition[1] == mot[i]:
+                    if i < len(mot)-1 or i == len(mot)-1 and transition[2] in self.etats_finaux:
+                        etat = transition[2]
+                else:
+                    return False
+        return True
+
 
 # debut des fonctions            
 def union_automate(aut1, aut2):
@@ -583,6 +594,67 @@ def duplication_automate(aut):
     return aut2
 
 
+mail = Automate()
+mail.alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '@', '.', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+for i in range(23):
+    mail.ajouter_etat(str(i))
+    if i == 0:
+        mail.ajouter_initial('0')
+    if i == 22:
+        mail.ajouter_final('22')
+
+
+for i in range(25):
+    mail.ajouter_transition('0', mail.alphabet[i], '0')
+
+mail.ajouter_transition('0', '.', '1')
+
+for i in range(25):
+    mail.ajouter_transition('1', mail.alphabet[i], '1')
+    
+for i in range(30, 38):
+    mail.ajouter_transition('1', mail.alphabet[i], '2')
+
+for i in range(29, 38):
+    mail.ajouter_transition('2', mail.alphabet[i], '2')
+    
+mail.ajouter_transition('1', '@', '3')
+mail.ajouter_transition('2', '@', '3')
+
+mail.ajouter_transition('3', 'l', '4')
+mail.ajouter_transition('4', 'a', '5')
+
+mail.ajouter_transition('3', 'u', '6')
+mail.ajouter_transition('6', 'n', '7')
+mail.ajouter_transition('7', 'i', '8')
+mail.ajouter_transition('8', 'v', '9')
+mail.ajouter_transition('9', '-', '5')
+
+mail.ajouter_transition('5', 'c', '10')
+mail.ajouter_transition('10', 'a', '11')
+mail.ajouter_transition('11', 't', '12')
+mail.ajouter_transition('12', 'h', '13')
+mail.ajouter_transition('13', 'o', '14')
+mail.ajouter_transition('14', 'l', '15')
+mail.ajouter_transition('15', 'i', '16')
+mail.ajouter_transition('16', 'l', '17')
+mail.ajouter_transition('17', 'l', '18')
+mail.ajouter_transition('18', 'e', '19')
+mail.ajouter_transition('19', '.', '20')
+mail.ajouter_transition('20', 'f', '21')
+mail.ajouter_transition('21', 'r', '22')
+
+mail.to_png('mail')
+mail.sauvegarder("mail.txt")
+    
+
+
+
+
+
+
+
+
 
 
 
@@ -625,6 +697,7 @@ def duplication_automate(aut):
 # aut8 = Automate()
 # aut8.charger("automate8.txt")
 # aut8.minimiser()
+# print(aut8.accepte_mot("cabbbab"))
 # aut8.to_png('aut8')
 
 # aut4 = Automate()
