@@ -275,35 +275,78 @@ class Automate:
                 if transition[0] == etat and transition[1] == "ε":
                     self.ajouter_initial(transition[2])
 
-    def nb_epsilon(self, etat):
-        nb = [0,0]
-        for transition in self.transitions:
-            if transition[0] == etat and transition[1] != "ε":
-                nb[0] += 1
-            if transition[2] == etat and transition[1] != "ε":
-                nb[1] += 1
-        return nb
+
+    def etats_accessibles(self):
+        '''Retourne la liste des états accessibles depuis l'état initial'''
+        etats_accessibles = set([self.etat_initial])
+        etats_a_explorer = [self.etat_initial]
+
+        while etats_a_explorer:
+            etat = etats_a_explorer.pop(0)
+            for transition in self.transitions:
+                if transition[0] == etat and transition[1] != "ε":
+                    if transition[2] not in etats_accessibles:
+                        etats_accessibles.add(transition[2])
+                        etats_a_explorer.append(transition[2])
+
+        return list(etats_accessibles)
+
+
+    def existe_chemin_vers_etat_final(self, etat):
+        '''Retourne True s'il existe un chemin depuis l'état donné vers un état final, False sinon'''
+        etats_a_explorer = [etat]
+        etats_visites = set()
+
+        while etats_a_explorer:
+            etat = etats_a_explorer.pop(0)
+            if etat in etats_visites:
+                continue
+            etats_visites.add(etat)
+            if etat in self.etats_finaux:
+                return True
+            for transition in self.transitions:
+                if transition[0] == etat:
+                    etats_a_explorer.append(transition[2])
+
+        return False
 
 
     def epsilon_supprimer(self):
-        '''Supprime les transitions epsilon de l'automate'''
-        for etat in self.etats:
-            nb = self.nb_epsilon(etat)
-            if nb[0] == 0 and nb[1] == 0:
-                for _ in range(self.nb_trans[etat][0]):
-                    self.supprimer_transition(source=etat, symbole="ε")
-                
+        '''Supprime les transitions epsilon de l'automate en appliquant la règle'''
+        transitions_a_supprimer = []
+        transitions_a_ajouter = []
+
+        for transition in self.transitions:
+            if transition[1] == "ε":
+                p, q = transition[0], transition[2]
+                for transition2 in self.transitions:
+                    if transition2[2] == p and transition2[1] != "ε":
+                        r, x = transition2[0], transition2[1]
+                        transitions_a_ajouter.append((r, x, q))
+                transitions_a_supprimer.append(transition)
+
+        for transition in transitions_a_ajouter:
+            self.ajouter_transition(transition[0], transition[1], transition[2])
+
+        for transition in transitions_a_supprimer:
+            self.supprimer_transition(transition[0], transition[1], transition[2])
             
-        
-        
+        etats_finaux = self.etats_finaux
+        etats_a_supprimer = []
+        for etat in self.etats:
+            if etat not in etats_finaux and not self.existe_chemin_vers_etat_final(etat):
+                etats_a_supprimer.append(etat)
+        for etat in etats_a_supprimer:
+            self.supprimer_etat(etat)
+
+
 
 
     def synchroniser(self):
         '''réalise la suppression des epsilons transitions de l'automate'''
         self.epsilon_cloture("ε")
         self.epsilon_initial()
-        # self.epsilon_supprimer()
-        # print(self.nb_trans)
+        self.epsilon_supprimer()
 
 
     def completer(self):
@@ -386,7 +429,7 @@ class Automate:
         '''Retourne un automate déterministe équivalent à l'automate'''
         aut = Automate()
         self.supprimer_puit()
-        # self.synchroniser()
+        self.synchroniser()
         aut.alphabet = self.alphabet
         etats_a_traiter = [self.etats_initial]
         already_done = []
@@ -592,123 +635,3 @@ def duplication_automate(aut):
         aut2.ajouter_transition(last_etat, "ε", etat)
 
     return aut2
-
-
-mail = Automate()
-mail.alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '@', '.', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-for i in range(23):
-    mail.ajouter_etat(str(i))
-    if i == 0:
-        mail.ajouter_initial('0')
-    if i == 22:
-        mail.ajouter_final('22')
-
-
-for i in range(25):
-    mail.ajouter_transition('0', mail.alphabet[i], '0')
-
-mail.ajouter_transition('0', '.', '1')
-
-for i in range(25):
-    mail.ajouter_transition('1', mail.alphabet[i], '1')
-    
-for i in range(30, 38):
-    mail.ajouter_transition('1', mail.alphabet[i], '2')
-
-for i in range(29, 38):
-    mail.ajouter_transition('2', mail.alphabet[i], '2')
-    
-mail.ajouter_transition('1', '@', '3')
-mail.ajouter_transition('2', '@', '3')
-
-mail.ajouter_transition('3', 'l', '4')
-mail.ajouter_transition('4', 'a', '5')
-
-mail.ajouter_transition('3', 'u', '6')
-mail.ajouter_transition('6', 'n', '7')
-mail.ajouter_transition('7', 'i', '8')
-mail.ajouter_transition('8', 'v', '9')
-mail.ajouter_transition('9', '-', '5')
-
-mail.ajouter_transition('5', 'c', '10')
-mail.ajouter_transition('10', 'a', '11')
-mail.ajouter_transition('11', 't', '12')
-mail.ajouter_transition('12', 'h', '13')
-mail.ajouter_transition('13', 'o', '14')
-mail.ajouter_transition('14', 'l', '15')
-mail.ajouter_transition('15', 'i', '16')
-mail.ajouter_transition('16', 'l', '17')
-mail.ajouter_transition('17', 'l', '18')
-mail.ajouter_transition('18', 'e', '19')
-mail.ajouter_transition('19', '.', '20')
-mail.ajouter_transition('20', 'f', '21')
-mail.ajouter_transition('21', 'r', '22')
-
-mail.to_png('mail')
-mail.sauvegarder("mail.txt")
-    
-
-
-
-
-
-
-
-
-
-
-
-# aut1 = Automate()
-# aut1.charger("automate1.txt")
-# aut2 = Automate()
-# aut2.charger("automate2.txt")
-
-# aut3 = concatenation_automate(aut1, aut2)
-# aut3.sauvegarder("automate3.txt")
-# aut3.to_png('aut3')
-
-# aut5 = Automate()
-# aut5.charger("automate5.txt")
-# aut5.determiniser()
-# aut5.to_png('aut5')
-
-# aut4 = duplication_automate(aut5)
-# aut4 = Automate()
-# aut4.charger("automate4.txt")
-# aut4.to_png('aut4h')
-# aut4.synchroniser()
-# aut4.sauvegarder("automate4.txt")
-# aut4.to_png('aut4')
-
-# aut6 = Automate()
-# aut6.charger("automate6.txt")
-# aut6 = union_automate(aut1, aut2)
-# aut6.completer()
-# aut6.determiniser()
-# aut6.sauvegarder("automate6.txt")
-# aut6.to_png('aut6')
-
-# aut7 = Automate()
-# aut7.charger("automate7.txt")
-# aut7.determiniser()
-# aut7.to_png('aut7')
-# aut7.sauvegarder("automate7.txt")
-
-# aut8 = Automate()
-# aut8.charger("automate8.txt")
-# aut8.minimiser()
-# print(aut8.accepte_mot("cabbbab"))
-# aut8.to_png('aut8')
-
-# aut4 = Automate()
-# aut4.charger("automate4.txt")
-# aut4.to_png('aut4h')
-# aut4.synchroniser()
-# aut4.to_png('aut4')
-
-# aut9 = Automate()
-# aut9.charger("automate9.txt")
-# aut9.to_png('aut9')
-# aut9.synchroniser()
-# aut9.sauvegarder("automate9_s.txt")
-# aut9.to_png('aut9_s')
