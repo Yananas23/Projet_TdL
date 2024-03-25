@@ -295,13 +295,13 @@ class Automate:
     def existe_chemin_vers_etat_final(self, etat):
         '''Retourne True s'il existe un chemin depuis l'état donné vers un état final, False sinon'''
         etats_a_explorer = [etat]
-        etats_visites = set()
+        etats_visites = []
 
         while etats_a_explorer:
             etat = etats_a_explorer.pop(0)
             if etat in etats_visites:
                 continue
-            etats_visites.add(etat)
+            etats_visites.append(etat)
             if etat in self.etats_finaux:
                 return True
             for transition in self.transitions:
