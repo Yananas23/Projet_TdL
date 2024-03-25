@@ -23,42 +23,43 @@ Le code définit une classe Automate qui représente un AFD. La classe contient 
 
 La classe Automate a les méthodes suivantes :
 
-__init__ : Initialise un automate vide.
-Automate : Définit l'alphabet de l'automate.
-ajouter_etat : Ajoute un état à l'automate.
-ajouter_initial : Ajoute un état initial à l'automate.
-ajouter_final : Ajoute un état final à l'automate.
-supprimer_etat : Supprime un état de l'automate.
-ajouter_transition : Ajoute une transition à l'automate.
-supprimer_transition : Supprime une transition de l'automate.
-copie : Retourne une copie de l'automate.
-__str__ : Retourne une représentation sous forme de chaîne de caractères de l'automate.
-demonte : Retourne une liste de transitions où chaque transition est décomposée en une transition par symbole de l'alphabet.
-concatenation_transitions : Retourne une liste de transitions où chaque transition est concaténée en une transition par état de l'automate.
-to_dot : Retourne une représentation graphique de l'automate sous forme de graphe avec la bibliothèque graphviz.
-to_png : Retourne une représentation graphique de l'automate sous forme d'image au format png.
-sauvegarder : Sauvegarde l'automate dans un fichier texte avec une structure prédéfinie.
-reconstruire : Permet de construire une liste d'états à partir d'une chaîne de caractères.
-charger : Charge un automate depuis un fichier texte avec une structure prédéfinie.
-reset : Réinitialise l'automate.
-epsilon_cloture : Retourne la clôture transitive de l'automate.
-epsilon_initial : Ajoute les états accessibles par epsilon aux états initiaux de l'automate.
-etats_accessibles : Retourne la liste des états accessibles depuis l'état initial.
-existe_chemin_vers_etat_final : Retourne vrai s'il existe un chemin depuis l'état donné vers un état final, faux sinon.
-epsilon_supprimer : Supprime les transitions epsilon de l'automate en appliquant la règle.
-synchroniser : Réalise la suppression des transitions epsilon de l'automate.
-completer : Complète l'automate pour qu'il soit complet.
-supprimer_puit : Supprime l'état puit de l'automate.
-table_transition : Retourne la table de transition de l'automate.
-afficher_table_transition : Affiche la table de transition de l'automate.
-est_deterministe : Retourne vrai si l'automate est déterministe, faux sinon.
-concatener : Retourne une chaîne de caractères concaténée à partir d'une liste de caractères.
-determiniser : Retourne un automate déterministe équivalent à l'automate.
-find_index : Retourne une liste des indexes où la valeur est présente dans la liste.
-moore : Réalise l'algorithme de Moore pour minimiser l'automate.
-minimiser : Retourne un automate minimal équivalent à l'automate.
-accepte_mot : Retourne vrai si le mot est accepté par l'automate, faux sinon.
-De plus, il existe trois fonctions union_automate, concatenation_automate, et duplication_automate qui effectuent des opérations d'union, de concaténation et de duplication sur deux ou plusieurs automates.
+`__init__` : Initialise un automate vide.  
+`Automate` : Définit l'alphabet de l'automate.  
+`ajouter_etat` : Ajoute un état à l'automate.  
+`ajouter_initial` : Ajoute un état initial à l'automate.  
+`ajouter_final` : Ajoute un état final à l'automate.  
+`supprimer_etat` : Supprime un état de l'automate.  
+`ajouter_transition` : Ajoute une transition à l'automate.  
+`supprimer_transition` : Supprime une transition de l'automate.  
+`copie` : Retourne une copie de l'automate.  
+`__str__` : Retourne une représentation sous forme de chaîne de caractères de l'automate.  
+`demonte` : Retourne une liste de transitions où chaque transition est décomposée en une transition par symbole de l'alphabet.  
+`concatenation_transitions` : Retourne une liste de transitions où chaque transition est concaténée en une transition par état de l'automate.  
+`to_dot` : Retourne une représentation graphique de l'automate sous forme de graphe avec la bibliothèque graphviz.  
+`to_png` : Retourne une représentation graphique de l'automate sous forme d'image au format png.  
+`sauvegarder` : Sauvegarde l'automate dans un fichier texte avec une structure prédéfinie.  
+`reconstruire` : Permet de construire une liste d'états à partir d'une chaîne de caractères.  
+`charger` : Charge un automate depuis un fichier texte avec une structure prédéfinie.  
+`reset` : Réinitialise l'automate.  
+`epsilon_cloture` : Retourne la clôture transitive de l'automate.  
+`epsilon_initial` : Ajoute les états accessibles par epsilon aux états initiaux de l'automate.  
+`etats_accessibles` : Retourne la liste des états accessibles depuis l'état initial.  
+`existe_chemin_vers_etat_final` : Retourne vrai s'il existe un chemin depuis l'état donné vers un état final, faux sinon.  
+`epsilon_supprimer` : Supprime les transitions epsilon de l'automate en appliquant la règle.  
+`synchroniser` : Réalise la suppression des transitions epsilon de l'automate.  
+`completer` : Complète l'automate pour qu'il soit complet.  
+`supprimer_puit` : Supprime l'état puit de l'automate.  
+`table_transition` : Retourne la table de transition de l'automate.  
+`afficher_table_transition` : Affiche la table de transition de l'automate.  
+`est_deterministe` : Retourne vrai si l'automate est déterministe, faux sinon.  
+`concatener` : Retourne une chaîne de caractères concaténée à partir d'une liste de caractères.  
+`determiniser` : Retourne un automate déterministe équivalent à l'automate.  
+`find_index` : Retourne une liste des indexes où la valeur est présente dans la liste.  
+`moore` : Réalise l'algorithme de Moore pour minimiser l'automate.  
+`minimiser` : Retourne un automate minimal équivalent à l'automate.  
+`accepte_mot` : Retourne vrai si le mot est accepté par l'automate, faux sinon.  
+<br>
+De plus, il existe trois fonctions `union_automate`, `concatenation_automate`, et `duplication_automate` qui effectuent des opérations d'union, de concaténation et de duplication sur deux ou plusieurs automates.
 
 # Exemple
 Voici un exemple d'utilisation de la classe Automate :
