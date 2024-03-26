@@ -276,22 +276,6 @@ class Automate:
                     self.ajouter_initial(transition[2])
 
 
-    def etats_accessibles(self):
-        '''Retourne la liste des états accessibles depuis l'état initial'''
-        etats_accessibles = set([self.etat_initial])
-        etats_a_explorer = [self.etat_initial]
-
-        while etats_a_explorer:
-            etat = etats_a_explorer.pop(0)
-            for transition in self.transitions:
-                if transition[0] == etat and transition[1] != "ε":
-                    if transition[2] not in etats_accessibles:
-                        etats_accessibles.add(transition[2])
-                        etats_a_explorer.append(transition[2])
-
-        return list(etats_accessibles)
-
-
     def existe_chemin_vers_etat_final(self, etat):
         '''Retourne True s'il existe un chemin depuis l'état donné vers un état final, False sinon'''
         etats_a_explorer = [etat]
